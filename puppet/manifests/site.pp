@@ -20,9 +20,9 @@ class { 'icinga2::server':
   db_password                => 'icinga2-password',
 }
 
-class { 'icinga2::nrpe':
-  allow_command_argument_processing => 1,
-}
+#class { 'icinga2::nrpe':
+#  allow_command_argument_processing => 1,
+#}
 
 icinga2::object::idomysqlconnection { 'mysql_connection':
   target_dir       => '/etc/icinga2/features-enabled',
@@ -63,17 +63,17 @@ file { [ '/root/.vim',
   ensure    => 'directory'
 }
 
-exec { 'copy-vim-syntax-file':
-  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
-  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/syntax/icinga2.vim /root/.vim/syntax/icinga2.vim',
-  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
-}
+#exec { 'copy-vim-syntax-file':
+#  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
+#  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/syntax/icinga2.vim /root/.vim/syntax/icinga2.vim',
+#  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
+#}
 
-exec { 'copy-vim-ftdetect-file':
-  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
-  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/ftdetect/icinga2.vim /root/.vim/ftdetect/icinga2.vim',
-  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
-}
+#exec { 'copy-vim-ftdetect-file':
+#  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
+#  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/ftdetect/icinga2.vim /root/.vim/ftdetect/icinga2.vim',
+#  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
+#}
 
 ####################################
 # Icinga 2 General
@@ -84,20 +84,20 @@ exec { 'copy-vim-ftdetect-file':
 
 
 # present icinga2 in icingaweb2's module documentation
-file { '/usr/share/icingaweb2/modules/icinga2':
-  ensure  => 'directory',
-  require => Package['icingaweb2']
-}
+#file { '/usr/share/icingaweb2/modules/icinga2':
+#  ensure  => 'directory',
+#  require => Package['icingaweb2']
+#}
 
-file { '/usr/share/icingaweb2/modules/icinga2/doc':
-  ensure  => 'link',
-  target  => '/usr/share/doc/icinga2/markdown',
-  require => [ Package['icinga2'], Package['icingaweb2'], File['/usr/share/icingaweb2/modules/icinga2'] ],
-}
+#file { '/usr/share/icingaweb2/modules/icinga2/doc':
+#  ensure  => 'link',
+#  target  => '/usr/share/doc/icinga2/markdown',
+#  require => [ Package['icinga2'], Package['icingaweb2'], File['/usr/share/icingaweb2/modules/icinga2'] ],
+#}
 
-file { '/etc/icingaweb2/enabledModules/icinga2':
-  ensure  => 'link',
-  target  => '/usr/share/icingaweb2/modules/icinga2',
-  require => File['/etc/icingaweb2/enabledModules'],
-}
+#file { '/etc/icingaweb2/enabledModules/icinga2':
+#  ensure  => 'link',
+#  target  => '/usr/share/icingaweb2/modules/icinga2',
+#  require => File['/etc/icingaweb2/enabledModules'],
+#}
 
