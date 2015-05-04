@@ -1,0 +1,55 @@
+FORGE
+  remote: https://forgeapi.puppetlabs.com
+  specs:
+    nanliu-staging (1.0.3)
+    puppetlabs-apache (1.4.1)
+      puppetlabs-concat (< 2.0.0, >= 1.1.1)
+      puppetlabs-stdlib (< 5.0.0, >= 2.4.0)
+    puppetlabs-apt (2.0.1)
+      puppetlabs-stdlib (>= 4.5.0)
+    puppetlabs-concat (1.2.1)
+      puppetlabs-stdlib (< 5.0.0, >= 3.2.0)
+    puppetlabs-inifile (1.2.0)
+    puppetlabs-mysql (3.3.0)
+      nanliu-staging (~> 1.0)
+      puppetlabs-stdlib (< 5.0.0, >= 3.2.0)
+    puppetlabs-stdlib (4.6.0)
+    puppetlabs-vcsrepo (1.2.0)
+
+GIT
+  remote: git://github.com/Icinga/puppet-icinga2.git
+  ref: master
+  sha: c3697ba7304c1cbf903515abbee969ece645f83a
+  specs:
+    icinga2 (0.6.1)
+      puppetlabs-apt (>= 1.5.2)
+      puppetlabs-stdlib (>= 4.3.2)
+
+GIT
+  remote: git://github.com/Icinga/puppet-icingaweb2.git
+  ref: master
+  sha: 2b634be4a57189b205902dd281e578f38e433709
+  specs:
+    icingaweb2 (0.0.0)
+      puppetlabs-apache (>= 1.2.0)
+      puppetlabs-concat (>= 1.2.0)
+      puppetlabs-inifile (>= 1.2.0)
+      puppetlabs-stdlib (>= 4.4.0)
+      puppetlabs-vcsrepo (>= 1.2.0)
+
+GIT
+  remote: git://github.com/pcfens/puppet-guest_additions
+  ref: master
+  sha: c96a4a5022a32161c17290a0a5bf3fde20984f09
+  specs:
+    guest-additions (0.0.1)
+
+DEPENDENCIES
+  guest-additions (>= 0)
+  icinga2 (>= 0)
+  icingaweb2 (>= 0)
+  puppetlabs-apt (>= 0)
+  puppetlabs-mysql (>= 0)
+  puppetlabs-stdlib (>= 0)
+  puppetlabs-vcsrepo (>= 0)
+

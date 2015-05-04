@@ -1,0 +1,14 @@
+forge "https://forgeapi.puppetlabs.com"
+
+mod "puppetlabs/apt"
+mod "puppetlabs/mysql"
+mod "puppetlabs/stdlib"
+mod "puppetlabs/vcsrepo"
+
+mod "guest-additions",
+  :git => "git://github.com/pcfens/puppet-guest_additions"
+
+mod "icinga2",
+  :git => "git://github.com/Icinga/puppet-icinga2.git"
+mod "icingaweb2",
+  :git => "git://github.com/Icinga/puppet-icingaweb2.git"
