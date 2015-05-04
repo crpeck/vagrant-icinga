@@ -1,50 +1,48 @@
-#include '::mysql::server'
-#include icinga2
-#include icinga2_ido_mysql
-#include icinga2-classicui
-#include icinga2-icinga-web
-#include icingaweb2
-#include icingaweb2-internal-db-mysql
-#include monitoring-plugins
+class { '::mysql::server':
+  root_password           => 'strongpassword',
+  remove_default_accounts => true,
+}
+mysql::db { 'icinga2_data':
+  user     => 'icinga2',
+  password => 'icinga2-password',
+  host     => 'localhost',
+  grant    => ['ALL'],
+}
 
-#icingaweb2::module { [ 'businessprocess', 'pnp4nagios', 'generictts' ]:
-#  builtin => false
-#}
+class { 'icinga2::server':
+  install_mail_utils_package => true,
+  server_enabled_features    => ['checker','notification'],
+  server_db_type             => 'mysql',
+  db_host                    => 'localhost',
+  db_port                    => '5432',
+  db_name                    => 'icinga2_data',
+  db_user                    => 'icinga2',
+  db_password                => 'icinga2-password',
+}
 
-####################################
-# Webserver
-####################################
+class { 'icinga2::nrpe':
+  allow_command_argument_processing => 1,
+}
 
-#class {'apache':
-  # don't purge php, icingaweb2, etc configs
-#  purge_configs => false,
-#}
+icinga2::object::idomysqlconnection { 'mysql_connection':
+  target_dir       => '/etc/icinga2/features-enabled',
+  target_file_name => 'ido-mysql.conf',
+  host             => '127.0.0.1',
+  port             => 3306,
+  user             => 'icinga2',
+  password         => 'icinga2-password',
+  database         => 'icinga2_data',
+  categories       => ['DbCatConfig', 'DbCatState', 'DbCatAcknowledgement', 'DbCatComment', 'DbCatDowntime', 'DbCatEventHandler' ],
+}
 
-#class {'::apache::mod::php': }
+icinga2::object::perfdatawriter { 'pnp':
+  host_perfdata_path      => '/var/spool/icinga2/perfdata/host-perfdata',
+  service_perfdata_path   => '/var/spool/icinga2/perfdata/service-perfdata',
+  host_format_template    => 'DATATYPE::HOSTPERFDATA\tTIMET::$icinga.timet$\tHOSTNAME::$host.name$\tHOSTPERFDATA::$host.perfdata$\tHOSTCHECKCOMMAND::$host.check_command$\tHOSTSTATE::$host.state$\tHOSTSTATETYPE::$host.state_type$',
+  service_format_template => 'DATATYPE::SERVICEPERFDATA\tTIMET::$icinga.timet$\tHOSTNAME::$host.name$\tSERVICEDESC::$service.name$\tSERVICEPERFDATA::$service.perfdata$\tSERVICECHECKCOMMAND::$service.check_command$\tHOSTSTATE::$host.state$\tHOSTSTATETYPE::$host.state_type$\tSERVICESTATE::$service.state$\tSERVICESTATETYPE::$service.state_type$',
+  rotation_interval       => '15s'
+}
 
-#include '::php::cli'
-#include '::php::mod_php5'
-
-#php::ini { '/etc/php.ini':
-#  display_errors => 'On',
-#  memory_limit => '256M',
-#  date_timezone => 'US/Eastern',
-#  session_save_path => '/var/lib/php/session'
-#}
-
-
-####################################
-# Misc
-####################################
-# fix puppet warning.
-# https://ask.puppetlabs.com/question/6640/warning-the-package-types-allow_virtual-parameter-will-be-changing-its-default-value-from-false-to-true-in-a-future-release/
-#if versioncmp($::puppetversion,'3.6.1') >= 0 {
-#  $allow_virtual_packages = hiera('allow_virtual_packages',false)
-#  Package {
-#    allow_virtual => $allow_virtual_packages,
-#  }
-#}
-#
 package { [ 'vim-enhanced', 'mailx', 'tree', 'gdb', 'rlwrap', 'git' ]:
   ensure => 'installed'
 }
@@ -60,19 +58,19 @@ User<| title == vagrant |>{
 }
 
 file { [ '/root/.vim',
-       '/root/.vim/syntax',
-       '/root/.vim/ftdetect' ] :
+        '/root/.vim/syntax',
+        '/root/.vim/ftdetect' ] :
   ensure    => 'directory'
 }
 
 exec { 'copy-vim-syntax-file':
-  path => '/bin:/usr/bin:/sbin:/usr/sbin',
+  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
   command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/syntax/icinga2.vim /root/.vim/syntax/icinga2.vim',
   require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
 }
 
 exec { 'copy-vim-ftdetect-file':
-  path => '/bin:/usr/bin:/sbin:/usr/sbin',
+  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
   command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/ftdetect/icinga2.vim /root/.vim/ftdetect/icinga2.vim',
   require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
 }
@@ -87,19 +85,19 @@ exec { 'copy-vim-ftdetect-file':
 
 # present icinga2 in icingaweb2's module documentation
 file { '/usr/share/icingaweb2/modules/icinga2':
-  ensure => 'directory',
+  ensure  => 'directory',
   require => Package['icingaweb2']
 }
 
 file { '/usr/share/icingaweb2/modules/icinga2/doc':
-  ensure => 'link',
-  target => '/usr/share/doc/icinga2/markdown',
+  ensure  => 'link',
+  target  => '/usr/share/doc/icinga2/markdown',
   require => [ Package['icinga2'], Package['icingaweb2'], File['/usr/share/icingaweb2/modules/icinga2'] ],
 }
 
 file { '/etc/icingaweb2/enabledModules/icinga2':
-  ensure => 'link',
-  target => '/usr/share/icingaweb2/modules/icinga2',
+  ensure  => 'link',
+  target  => '/usr/share/icingaweb2/modules/icinga2',
   require => File['/etc/icingaweb2/enabledModules'],
 }
 
