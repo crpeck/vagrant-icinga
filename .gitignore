@@ -2,4 +2,4 @@
 .vagrant
 .librarian
 .Puppetfile.lock
-modules
+puppet/modules/*
