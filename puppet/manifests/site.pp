@@ -1,14 +1,3 @@
-class { '::mysql::server':
-  root_password           => 'strongpassword',
-  remove_default_accounts => true,
-}
-mysql::db { 'icinga2_data':
-  user     => 'icinga2',
-  password => 'icinga2-password',
-  host     => 'localhost',
-  grant    => ['ALL'],
-}
-
 class { 'icinga2::server':
   install_mail_utils_package => true,
   server_enabled_features    => ['checker','notification'],
@@ -18,6 +7,17 @@ class { 'icinga2::server':
   db_name                    => 'icinga2_data',
   db_user                    => 'icinga2',
   db_password                => 'icinga2-password',
+}
+
+class { '::mysql::server':
+  root_password           => 'strongpassword',
+  remove_default_accounts => true,
+}
+mysql::db { 'icinga2_data':
+  user     => 'icinga2',
+  password => 'icinga2-password',
+  host     => 'localhost',
+  grant    => ['ALL'],
 }
 
 #class { 'icinga2::nrpe':
@@ -43,25 +43,28 @@ icinga2::object::perfdatawriter { 'pnp':
   rotation_interval       => '15s'
 }
 
-package { [ 'vim-enhanced', 'mailx', 'tree', 'gdb', 'rlwrap', 'git' ]:
+
+package { [
+  'bash-completion',
+  'bsd-mailx',
+  'git',
+  'rlwrap',
+  'tree',
+  ]:
   ensure => 'installed'
 }
-#
-package { 'bash-completion':
-  ensure => 'installed',
-}
 
-@user { vagrant: ensure => present }
-User<| title == vagrant |>{
-  groups +> ['icinga', 'icingacmd'],
-  require => Package['icinga2']
-}
+#@user { vagrant: ensure => present }
+#User<| title == vagrant |>{
+#  groups +> ['icinga', 'icingacmd'],
+#  require => Package['icinga2']
+#}
 
-file { [ '/root/.vim',
-        '/root/.vim/syntax',
-        '/root/.vim/ftdetect' ] :
-  ensure    => 'directory'
-}
+#file { [ '/root/.vim',
+#        '/root/.vim/syntax',
+#        '/root/.vim/ftdetect' ] :
+#  ensure    => 'directory'
+#}
 
 #exec { 'copy-vim-syntax-file':
 #  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
