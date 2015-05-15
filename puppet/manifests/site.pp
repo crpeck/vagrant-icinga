@@ -1,14 +1,63 @@
-class { 'icinga2::server':
-  install_mail_utils_package => true,
-  server_enabled_features    => ['checker','notification'],
-  server_db_type             => 'mysql',
-  db_host                    => 'localhost',
-  db_port                    => '5432',
-  db_name                    => 'icinga2_data',
-  db_user                    => 'icinga2',
-  db_password                => 'icinga2-password',
+package { [
+  'bash-completion',
+  'bsd-mailx',
+  'git',
+  'rlwrap',
+  'tree',
+  ]:
+  ensure => 'installed'
 }
 
+class {'apache':
+  mpm_module    => 'prefork',
+  default_mods  => [  'actions',
+                      'alias',
+                      'asis',
+                      'auth_basic',
+                      'auth_digest',
+                      'authn_anon',
+                      'authn_core',
+                      'authn_dbm',
+                      'authn_file',
+                      'authz_groupfile',
+                      'authz_user',
+                      'dir',
+                      'env',
+                      'expires',
+                      'headers',
+                      'include',
+                      'info',
+                      'mime',
+                      'mime_magic',
+                      'negotiation',
+                      'php',
+                      'proxy',
+                      'proxy_connect',
+                      'proxy_http',
+                      'rewrite',
+                      'setenvif',
+                      'status',
+                      'unique_id',
+                      'usertrack' ],
+  purge_configs => false,
+}
+
+class { 'apache::mod::ssl':
+  ssl_compression => false,
+  ssl_options     => [ 'StdEnvVars' ],
+}
+
+#php::ini { '/etc/php.ini':
+#  display_errors    => 'On',
+#  memory_limit      => '256M',
+#  date_timezone     => 'US/New York',
+#  session_save_path => '/var/lib/php/session',
+#  require           => Class['::apache'],
+#  notify            => Service['httpd'],
+#}
+
+
+###
 class { '::mysql::server':
   root_password           => 'strongpassword',
   remove_default_accounts => true,
@@ -20,8 +69,21 @@ mysql::db { 'icinga2_data':
   grant    => ['ALL'],
 }
 
+class { 'icinga2::server':
+  install_mail_utils_package => true,
+  server_enabled_features    => ['checker', 'icinga2', 'doc', 'livestatus', 'monitoring', 'notification'],
+  server_db_type             => 'mysql',
+  db_host                    => 'localhost',
+  db_port                    => '3306',
+  db_name                    => 'icinga2_data',
+  db_user                    => 'icinga2',
+  db_password                => 'icinga2-password',
+}
+
+
 #class { 'icinga2::nrpe':
 #  allow_command_argument_processing => 1,
+#  nrpe_purge_unmanaged => true,
 #}
 
 icinga2::object::idomysqlconnection { 'mysql_connection':
@@ -43,64 +105,52 @@ icinga2::object::perfdatawriter { 'pnp':
   rotation_interval       => '15s'
 }
 
-
-package { [
-  'bash-completion',
-  'bsd-mailx',
-  'git',
-  'rlwrap',
-  'tree',
-  ]:
-  ensure => 'installed'
+class { 'icingaweb2':
+  admin_users         => 'crpeck, pcfens',
+  auth_backend        => 'external',
+  auth_resource       => 'wm_ldap',
+  install_method      => 'git',
+  manage_apache_vhost => true,
 }
-
-#@user { vagrant: ensure => present }
-#User<| title == vagrant |>{
-#  groups +> ['icinga', 'icingacmd'],
-#  require => Package['icinga2']
-#}
-
-#file { [ '/root/.vim',
-#        '/root/.vim/syntax',
-#        '/root/.vim/ftdetect' ] :
-#  ensure    => 'directory'
-#}
-
-#exec { 'copy-vim-syntax-file':
-#  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
-#  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/syntax/icinga2.vim /root/.vim/syntax/icinga2.vim',
-#  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
-#}
-
-#exec { 'copy-vim-ftdetect-file':
-#  path    => '/bin:/usr/bin:/sbin:/usr/sbin',
-#  command => 'cp -f /usr/share/doc/icinga2-common-$(rpm -q icinga2-common | cut -d\'-\' -f3)/syntax/vim/ftdetect/icinga2.vim /root/.vim/ftdetect/icinga2.vim',
-#  require => [ Package['vim-enhanced'], Package['icinga2-common'], File['/root/.vim/syntax'] ]
-#}
-
-####################################
-# Icinga 2 General
-####################################
 
 # enable the command pipe
 #icinga2::feature { 'command': }
 
+#file { '/etc/icingaweb2/authentication.ini':
+#  ensure  => present,
+#  target  => '/etc/icingaweb2/authentication.ini',
+#  require => Class['icingaweb2'],
+#  owner   => 'icingaweb2',
+#  group   => 'www-data',
+#  mode    => '0664',
+#  content => '
+#[ldap]
+#backend             = "ldap"
+#resource            = "wm_ldap"
+#user_class          = "inetOrgPerson"
+#user_name_attribute = "uid"
+#filter              = ""
+#base_dn             = "ou=people,dc=wm,dc=edu"
+#
+#',
+#}
+
 
 # present icinga2 in icingaweb2's module documentation
-#file { '/usr/share/icingaweb2/modules/icinga2':
-#  ensure  => 'directory',
-#  require => Package['icingaweb2']
-#}
+file { '/usr/share/icingaweb2/modules/icinga2':
+  ensure  => 'directory',
+  require => Class['icingaweb2']
+}
 
-#file { '/usr/share/icingaweb2/modules/icinga2/doc':
-#  ensure  => 'link',
-#  target  => '/usr/share/doc/icinga2/markdown',
-#  require => [ Package['icinga2'], Package['icingaweb2'], File['/usr/share/icingaweb2/modules/icinga2'] ],
-#}
+file { '/usr/share/icingaweb2/modules/icinga2/doc':
+  ensure  => 'link',
+  target  => '/usr/share/doc/icinga2/markdown',
+  require => [ Package['icinga2'], Class['icingaweb2'], File['/usr/share/icingaweb2/modules/icinga2'] ],
+}
 
-#file { '/etc/icingaweb2/enabledModules/icinga2':
-#  ensure  => 'link',
-#  target  => '/usr/share/icingaweb2/modules/icinga2',
-#  require => File['/etc/icingaweb2/enabledModules'],
-#}
+file { '/etc/icingaweb2/enabledModules/icinga2':
+  ensure  => 'link',
+  target  => '/usr/share/icingaweb2/modules/icinga2',
+  require => File['/etc/icingaweb2/enabledModules'],
+}
 

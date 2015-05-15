@@ -28,9 +28,9 @@ GIT
 GIT
   remote: git://github.com/Icinga/puppet-icingaweb2.git
   ref: master
-  sha: 2b634be4a57189b205902dd281e578f38e433709
+  sha: 9425df20022c9bf546b55198782054cfebd51ebb
   specs:
-    icingaweb2 (0.0.0)
+    icingaweb2 (1.0.3)
       puppetlabs-apache (>= 1.2.0)
       puppetlabs-concat (>= 1.2.0)
       puppetlabs-inifile (>= 1.2.0)
