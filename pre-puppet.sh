@@ -23,8 +23,8 @@ fi
 echo "Provisioning..."
 sudo apt-get update
 #
-echo -e "\nInstalling ruby-dev"
-sudo apt-get install -y ruby-dev
+echo -e "\nInstalling ruby-dev and git"
+sudo apt-get install -y ruby-dev git
 #
 echo -e "\nInstalling librarian-puppet"
 sudo gem install librarian-puppet
