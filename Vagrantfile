@@ -12,11 +12,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder "", "/vagrant", create: true
   config.vm.provision "shell", path: "./pre-puppet.sh"
   config.vm.provision :puppet do |puppet|
+    puppet.hiera_config_path = "hiera.yaml"
     puppet.manifests_path = "puppet/manifests"
     puppet.module_path = "puppet/modules"
     puppet.manifest_file  = "site.pp"
     puppet.options = [
-      "--pluginsync"
+      "--pluginsync",
+      "--debug"
     ]
   end
   config.vm.provision "shell", path: "./post-puppet.sh"

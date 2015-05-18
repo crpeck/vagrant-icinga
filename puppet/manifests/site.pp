@@ -1,4 +1,5 @@
 package { [
+  'apache2-utils',
   'bash-completion',
   'bsd-mailx',
   'git',
@@ -59,12 +60,12 @@ class { 'apache::mod::ssl':
 
 ###
 class { '::mysql::server':
-  root_password           => 'strongpassword',
+  root_password           => hiera('db_root_password'),
   remove_default_accounts => true,
 }
 mysql::db { 'icinga2_data':
   user     => 'icinga2',
-  password => 'icinga2-password',
+  password => hiera('db_password'),
   host     => 'localhost',
   grant    => ['ALL'],
 }
@@ -77,7 +78,7 @@ class { 'icinga2::server':
   db_port                    => '3306',
   db_name                    => 'icinga2_data',
   db_user                    => 'icinga2',
-  db_password                => 'icinga2-password',
+  db_password                => hiera('db_password'),
 }
 
 
@@ -92,7 +93,7 @@ icinga2::object::idomysqlconnection { 'mysql_connection':
   host             => '127.0.0.1',
   port             => 3306,
   user             => 'icinga2',
-  password         => 'icinga2-password',
+  password         => hiera('db_password'),
   database         => 'icinga2_data',
   categories       => ['DbCatConfig', 'DbCatState', 'DbCatAcknowledgement', 'DbCatComment', 'DbCatDowntime', 'DbCatEventHandler' ],
 }
@@ -106,7 +107,7 @@ icinga2::object::perfdatawriter { 'pnp':
 }
 
 class { 'icingaweb2':
-  admin_users         => 'crpeck, pcfens',
+  admin_users         => 'admin, crpeck, pcfens',
   auth_backend        => 'external',
   auth_resource       => 'wm_ldap',
   install_method      => 'git',
